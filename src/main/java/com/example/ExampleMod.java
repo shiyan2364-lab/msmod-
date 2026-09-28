@@ -1,30 +1,26 @@
-package com.example;
+package com.example; // 注意：这个包名必须和你文件所在的文件夹路径完全一致！
 
 import net.fabricmc.api.ModInitializer;
-
-import net.minecraft.resources.Identifier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public class ExampleMod implements ModInitializer {
-	public static final String MOD_ID = "modid";
-
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
-		LOGGER.info("Hello Fabric world!");
-	}
-
-	public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
-	}
+    @Override
+    public void onInitialize() {
+        // 监听玩家攻击实体的事件
+        AttackEntityCallback.EVENT.register((PlayerEntity player, World world, Hand hand, net.minecraft.entity.Entity entity, net.minecraft.util.hit.EntityHitResult hitResult) -> {
+            // 只在服务端执行逻辑，且目标必须是活体生物
+            if (!world.isClient && entity instanceof LivingEntity) {
+                // 直接造成极大伤害实现秒杀
+                entity.damage(DamageSource.player(player), Float.MAX_VALUE);
+            }
+            return ActionResult.PASS;
+        });
+    }
 }
